@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "paper-correction",
+  "private_key_id": "59f4c4bd6353fa6806d92f390cd49e23e01861f5",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDQjyhEzb/AwGWF\nzEkhcukgTjJ+tXUjDgdWnSnxquivOxWop499tUicJzOymqxIxn1GdqZBLfVZxlW0\n3/r2Y99mLmnY1Tn8jZnACx0/hrkaHq3JMyIqeHCPMUanK7ycSo1c+Kv3SxrKphHj\nLuh/dbQKZ3j19Wqt6BLErffwAJIvh4hmIanUdY2cyjEZAucVHaRns5/NErpJT/wz\nnUtPG6JesvpINB7ipHUJroZTNkAF0MaXBWXacbj+O3I3+OIemp/j68XGumxWZemy\nWvBFyNwUlfJ7cUh0XbidKWAYlfOjB+2g0FdkNtBwYbaTozlSRM1fJd20tGnV1gml\nbZn2jULLAgMBAAECggEABxQ84Sz8q728FHENMGn2mMaetydQnQp+XEXEZTQQZtZC\nE3HwkGtFViuMeSz/2Q6HtQsU9JRrRgtR4GxT1+Ym8JB1vkrqh3SE+fxGl1/qy4Ss\nEG7AY6Gn7GxXQhhddA6hwrycFa5CcAt4AvaWJLFplYrSk8KrRtDgRjXDey2ByMQo\ns1d1/HJ8vEqJa2Q1s41RbQZ0vRZRWy9XAOyI9nt3rlwyoHpd07SGtA/R72U4j3gH\nOyWXcEOLRH8GXtvsSVWOPpOa/TAMO7pmtTm9Z+jYjtT172WswQYti7glFVG7nq2I\nkNfGfz7t074hxKZzxdIE1ooH2nG/y5xduYj7jzhFKQKBgQD6267QsAnmt6i97pc7\nP0QQe5TlJuUvNHDBHXbSA1dEOuqy8BvTOnbfLBqdm2LEsK7bYrazsiYPgPsWOblB\nfXItwHt2GbH00wQncyawU+8srwTrINRsV1z7cf1jrNKCfMadzvCtO0CG0oZPAThh\niiCli1P1Z2cWVGWRO4NpPeco6QKBgQDU1YVlcBcLrMRERy0dC8N8D5Qyj0UkQWLc\n60cc01d7N8NU51C1S0Qm6pRP6/9yvLI1aX7nzWH7/5sPMHK1Buifshmlm8Q7d1ce\n/Qm2O1vYv477625Kryo3zOXPBnRx9xyD2ePiM9iHzHhRVCHygcrkJwoUcFUuhdn2\nRG6GFr99kwKBgQDABqAYAVli8h3KXjQH11ML5v3AN/jiHJtfSGWnN4V6pjr4hJJY\nK/3IsiMhmEuP0svXBgZjIbC+13Xcuo0UE6nuWdRoQB0YEtuwMxZfjbCdHNCACF5z\nHKEBnW1g+m8eEdOcA0f640tuqQLEwWNeTvTUpAW96cxgrHQfK1ZZnlgv2QKBgGql\nX0VX6ERSWro3zBQ828RjbgfzoFqtZON8BVMdVz2H0JnPmrJtN4YkjxKJF6Qfh1Ca\nPxvZ3xpNlx4CUcgB4Th8HrvMFIUTpJUDiAVHMxulyPjUnJxRr17sjc6x1lFw2Fn9\nKWIkRoCtZTCjbqs8fDTclwFs1FIOggwTeCo6ZdN/AoGBAKr5bFpSAXengmteMoIW\nJ8OeoW21zQNN8HgDSk0l6+ikfFQ4Wlan89Gv59aM97ELFMWG33GOx9gz2YteUpo3\n7ZoqVBTdJUkWSqKLI/Gto+ADwKj22WTozJbfkCXVqQRCrLz8pZplNAY5lFd/JQIP\npbyirY7/qf0soiDxDQmWjN1U\n-----END PRIVATE KEY-----\n",
+  "client_email": "vision-paper@paper-correction.iam.gserviceaccount.com",
+  "client_id": "104485596238692974578",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/vision-paper%40paper-correction.iam.gserviceaccount.com"
+}

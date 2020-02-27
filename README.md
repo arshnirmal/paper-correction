@@ -1,29 +1,66 @@
-# README #
+#  Automated-paper-correction
 
-This README would normally document whatever steps are necessary to get your application up and running.
+  
 
-### What is this repository for? ###
+End to end solution for hassle free paper correction, for universities/teachers/students
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+  
+  
 
-### How do I get set up? ###
+##  Installation
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+  
 
-### Contribution guidelines ###
+Use the package manager [pip](https://pip.pypa.io/en/stable/) to install required packages.
 
-* Writing tests
-* Code review
-* Other guidelines
+  
 
-### Who do I talk to? ###
+```bash
 
-* Repo owner or admin
-* Other community or team contact
+pip install -r requirements.txt
+
+```
+
+##  Structure
+
+  
+
+├── README.md
+
+├── client
+
+├── requirements.txt
+
+├── server
+
+└── test_images
+
+## Client
+**VueJS application.**
+
+> To run
+>
+In the client directory 
+
+    npm install && npm run serve
+
+**Routes**
+/ - contains working PoC
+/test - contains correction text placeholder along with PoC
+/final - WIP 
+
+## Server
+**Python Flask**
+
+> To run
+
+    python app.py
+
+
+  
+
+##  License
+
+  
+
+[MIT](https://choosealicense.com/licenses/mit/)
