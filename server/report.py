@@ -89,11 +89,26 @@ def process_student_paper(PATH_PAPERS):
                         q_number, ans = get_answers_from_studentpaper(
                             ans.rsplit('\n'))
                 all_student_answers.append((idx+1, q_number, ans))
+                
+    if 'PHOTOS' in folders and len(folders)==1:
+        
+        flag=2
+        print('Found only PHOTOS folder....')
+        for idx, folder in enumerate(sorted((os.listdir(PATH_PAPERS)))):
+            if not folder.startswith('.'):
+                for file in os.listdir(os.path.join(PATH_PAPERS, folder)):
+                    if file.endswith('.txt'):
+                        #print(file)
+                        f = open(os.path.join(PATH_PAPERS, folder, file), "r")
+                        ans = f.read()
+                        #print(ans)
+                        q_number, ans = get_answers_from_studentpaper(ans.rsplit('\n'))
+                all_student_answers.append((idx+1, q_number, ans))                
 
     if 'PHOTOS' not in folders and len(folders) >= 1:
+    
         flag = 0
         print('No PHOTOS folder found... continuing...')
-
         for idx, folder in enumerate(sorted((os.listdir(PATH_PAPERS)))):
             for file in os.listdir(os.path.join(PATH_PAPERS, folder)):
                 if file.endswith('.txt'):
@@ -448,6 +463,9 @@ def interpret_sim_mat_and_generate_report(sim_mat, sim_mat_trans, ans_key_sent, 
 
     if flag == 1 and current_paper == 1:
         os.chdir(os.path.join(PATH_PAPERS, 'PHOTOS'))
+        
+    elif flag==2:
+      os.chdir(os.path.join(PATH_PAPERS, 'PHOTOS'))    
 
     elif flag == 1 and current_paper > 1:
         os.chdir(os.path.join(PATH_PAPERS, 'S'+str(current_paper-1)))
@@ -685,6 +703,11 @@ def plot_assesment_df(df, path, current_paper, current_q_number, flag):
             current_q_number)+'.png'), bbox_inches='tight')
         plt.close()
         print('Plotted assesment .png')
+        
+    elif flag==2:
+        plt.savefig(os.path.join(path, 'PHOTOS', str(current_q_number)+'.png'), bbox_inches='tight')
+        plt.close()
+        print('Plotted assesment .png')    
 
     elif flag == 1 and current_paper > 1:
         plt.savefig(os.path.join(path, 'S'+str(current_paper-1),
@@ -779,6 +802,10 @@ def generate_pdf_reports_from_individual_feedbacks(PATH_PAPERS, current_paper, n
     if flag == 1 and current_paper == 1:
         folder = os.path.join(PATH_PAPERS, 'PHOTOS')
         save_name = 'PHOTOS.pdf'
+        
+    elif flag==2:
+        folder = os.path.join(PATH_PAPERS,'PHOTOS')
+        save_name = 'PHOTOS.pdf'    
 
     elif flag == 1 and current_paper > 1:
         folder = os.path.join(PATH_PAPERS, 'S'+str(current_paper-1))
