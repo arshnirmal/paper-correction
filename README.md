@@ -1,66 +1,32 @@
-#  Automated-paper-correction
-
-  
+# Automated-paper-correction
 
 End to end solution for hassle free paper correction, for universities/teachers/students
 
-  
-  
+## Setup
 
-##  Installation
+Make sure python is installed  
+If you are using conda
 
-  
+```bash
+conda create -n <env name here>
+conda install pip
+```
+
+## Installation
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install required packages.
 
-  
-
 ```bash
-
 pip install -r requirements.txt
-
 ```
 
-##  Structure
+## Usage
 
-  
+```python
+conda activate <env name here>
+jupyter notebook
+```
 
-├── README.md
-
-├── client
-
-├── requirements.txt
-
-├── server
-
-└── test_images
-
-## Client
-**VueJS application.**
-
-> To run
->
-In the client directory 
-
-    npm install && npm run serve
-
-**Routes**
-/ - contains working PoC
-/test - contains correction text placeholder along with PoC
-/final - WIP 
-
-## Server
-**Python Flask**
-
-> To run
-
-    python app.py
-
-
-  
-
-##  License
-
-  
+## License
 
 [MIT](https://choosealicense.com/licenses/mit/)

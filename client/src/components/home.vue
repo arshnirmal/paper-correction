@@ -26,7 +26,8 @@
           @click="attemptUpload"
           v-if="imageup"
           v-bind:class="{ disabled: !image }"
-        >Upload</b-button>
+          >Upload</b-button
+        >
       </b-col>
       <b-col>
         <div class="m-3">

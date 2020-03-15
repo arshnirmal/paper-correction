@@ -1,6 +1,5 @@
 <template>
   <b-container fluid>
-
     <!-- COMPONENTS -->
 
     <b-row>
@@ -13,7 +12,6 @@
           size="sm"
           drop-placeholder="Drop file here..."
         ></b-form-file>
-
 
         <picture-input
           class="mt-3"
