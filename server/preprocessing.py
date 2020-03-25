@@ -17,6 +17,7 @@ from pdf2image.exceptions import (
 # FILE_PATH = '/Users/bhargavdesai/Desktop/New Folder With Items'
 # OUTPUT_PATH = '/Users/bhargavdesai/Desktop/Testing'
 # os.mkdir(OUTPUT_PATH)
+
 class image_preprocessing:
     def __init__(self, FILE_PATH, OUTPUT_PATH):
         self.FILE_PATH = FILE_PATH
@@ -25,7 +26,7 @@ class image_preprocessing:
     def preprocess(self, PATH, idf):
         # TODO: Handle error if image is already processed
         try:
-            for idx, img in enumerate(os.listdir(PATH)):
+            for idx, img in enumerate(sorted(os.listdir(PATH))):
 
                 img = cv2.imread(os.path.join(PATH, img), -1)
                 print(img.shape)
@@ -51,6 +52,11 @@ class image_preprocessing:
         for file in os.listdir(FLUSH_PATH):
             if file.endswith('.ppm'):
                 os.remove(os.path.join(FLUSH_PATH, file))
+                
+    def ensure_order(self, path):
+        for img_file in os.listdir(path):
+            num = img_file.split('-')[5]
+            os.rename(os.path.join(path, img_file), os.path.join(path, num))
 
     def check_for_file_formats_and_process(self):
         FILE_PATH = self.FILE_PATH
@@ -62,7 +68,7 @@ class image_preprocessing:
         others_file = []
         flag = None
 
-        for file in os.listdir(FILE_PATH):
+        for file in sorted(os.listdir(FILE_PATH)):
 
             if file.endswith(('.jpg', '.jpeg', '.tif', '.png')):
                 flag = 1
@@ -85,12 +91,14 @@ class image_preprocessing:
                 except:
                     pass
                 print('Found a PDF file')
-                print('Created folder for Student' + str(pdf_count))
+                print('Created folder for Student ' + str(pdf_count))
                 convert_from_path(os.path.join(FILE_PATH, file), output_folder=os.path.join(
                     OUTPUT_PATH, 'S'+str(pdf_count)+'/'))
-                print('Converted scanned PDF to images for Student' + str(pdf_count))
+                print('Converted scanned PDF to images for Student ' + str(pdf_count))
+                print('Ensuring image files are tagged in order...')
                 print('Preprocessing images for better OCR detection')
                 print(os.path.join(OUTPUT_PATH, 'S'+str(pdf_count)+'/'))
+                self.ensure_order(os.path.join(OUTPUT_PATH, 'S'+str(pdf_count)+'/'))
                 self.preprocess(os.path.join(OUTPUT_PATH, 'S' +
                                              str(pdf_count)+'/'), pdf_count)
                 print('Flushing uneccessary files.... Done!')
