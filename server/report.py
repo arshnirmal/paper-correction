@@ -19,6 +19,7 @@ import pandas as pd
 import re
 import time
 from fpdf import FPDF
+from PIL import Image, ImageChops
 
 # Necessary imports
 # Import cosine similarity evaluation metric
@@ -686,39 +687,66 @@ def denormalise_sentences(ans_stu_sent, ans_stu_main, assigned_weights):
 
 # Plot breakup of marks for an answer
 
+def trim(im):
+    bg = Image.new(im.mode, im.size, im.getpixel((0,0)))
+    diff = ImageChops.difference(im, bg)
+    diff = ImageChops.add(diff, diff, 2.0, -100)
+    bbox = diff.getbbox()
+    if bbox:
+        return im.crop(bbox)
+
+
 
 def plot_assesment_df(df, path, current_paper, current_q_number, flag):
 
-    fig, ax = plt.subplots(dpi=300, constrained_layout=True)
+    fig, ax = plt.subplots(dpi=75, constrained_layout=True)
     fig.patch.set_visible(False)
     ax.axis('off')
     ax.axis('tight')
 
-    ax.table(cellText=df.values, colWidths=[
-             0.5]*len(df.columns.values), colLabels=df.columns, cellLoc='center').scale(1, 10)
+    ax.table(cellText=df.values, colWidths=[1.0]*len(df.columns.values), colLabels=df.columns, cellLoc='center').scale(1, 5)
     fig.tight_layout()
-
+    
+    
     if flag == 1 and current_paper == 1:
-        plt.savefig(os.path.join(path, 'PHOTOS', str(
-            current_q_number)+'.png'), bbox_inches='tight')
+        save_path = os.path.join(path, 'PHOTOS', str(current_q_number)+'.png')
+        plt.savefig(save_path, bbox_inches='tight')
         plt.close()
+        im = Image.open(save_path)
+        im = trim(im)
+        im = im.convert('RGB')
+        im.save(save_path) 
         print('Plotted assesment .png')
         
+        
     elif flag==2:
-        plt.savefig(os.path.join(path, 'PHOTOS', str(current_q_number)+'.png'), bbox_inches='tight')
+        save_path = os.path.join(path, 'PHOTOS', str(current_q_number)+'.png')
+        plt.savefig(save_path, bbox_inches='tight')
         plt.close()
+        im = Image.open(save_path)
+        im = trim(im)
+        im = im.convert('RGB')
+        im.save(save_path) 
         print('Plotted assesment .png')    
 
     elif flag == 1 and current_paper > 1:
-        plt.savefig(os.path.join(path, 'S'+str(current_paper-1),
-                                 str(current_q_number)+'.png'), bbox_inches='tight')
+        save_path = os.path.join(path, 'S'+str(current_paper-1), str(current_q_number)+'.png')
+        plt.savefig(save_path, bbox_inches='tight')
         plt.close()
+        im = Image.open(save_path)
+        im = trim(im)
+        im = im.convert('RGB')
+        im.save(save_path) 
         print('Plotted assesment .png')
 
     else:
-        plt.savefig(os.path.join(path, 'S'+str(current_paper),
-                                 str(current_q_number)+'.png'), bbox_inches='tight')
+        save_path = os.path.join(path, 'S'+str(current_paper), str(current_q_number)+'.png')
+        plt.savefig(save_path, bbox_inches='tight')
         plt.close()
+        im = Image.open(save_path)
+        im = trim(im)
+        im = im.convert('RGB')
+        im.save(save_path) 
         print('Plotted assesment .png')
 
 
@@ -785,7 +813,7 @@ class PDF(FPDF):
 
         self.add_page()
         self.titles(num, title)
-        self.image(name, h=150, w=120, x=45, y=30, type="png")
+        self.image(name, h=100, w=190, x=10, y=60, type="png")
         # Line break
         self.ln()
 
