@@ -278,15 +278,17 @@ def evaluate(all_student_answers, marks, reference_answers, flag):
     print('Found %s papers to be checked! Checking them now.....' % n_papers)
 
     for val in all_student_answers:
-
+        
+        
         current_paper = val[0]
-        n_answers = len(val[1])
+        attempted_ques = []
 
         print(current_paper)
         current_student_answers = val[2]
 
         for idx, current_answer in enumerate(current_student_answers):
             current_q_number = val[1][idx]
+            attempted_ques.append(current_q_number)
             print(current_q_number)
             reference_answer, total_marks = get_reference_answer_and_total_marks(
                 current_q_number, reference_answers, marks)
@@ -294,7 +296,7 @@ def evaluate(all_student_answers, marks, reference_answers, flag):
                     current_paper, current_q_number, flag)
         start_time = time.time()
         generate_pdf_reports_from_individual_feedbacks(
-            PATH_PAPERS, current_paper, n_answers, flag)
+            PATH_PAPERS, current_paper, attempted_ques, flag)
         print('completed generating a report, check folder')
         print('Based on our calculations, it will take the following time to generate reports for the next student:')
         print("--- %s seconds ---" % (time.time() - start_time))
@@ -823,7 +825,7 @@ class PDF(FPDF):
         self.report_body(name)
 
 
-def generate_pdf_reports_from_individual_feedbacks(PATH_PAPERS, current_paper, n_answers, flag):
+def generate_pdf_reports_from_individual_feedbacks(PATH_PAPERS, current_paper, attempted_ques, flag):
 
     print('Please wait while we generate the feedback PDF for you...... This might take upto 2 minutes!')
 
@@ -850,9 +852,7 @@ def generate_pdf_reports_from_individual_feedbacks(PATH_PAPERS, current_paper, n
     pdf.set_title(title)
     pdf.set_author('Bhargav Desai')
 
-    for i in range(n_answers):
-
-        i += 1
+    for i in attempted_ques:
 
         # Generation of report
         pdf.print_report(i, 'ANALYSIS', os.path.join(folder, str(i)+'.txt'))
