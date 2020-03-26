@@ -49,7 +49,7 @@ class processed_ocr:
         self.flag = flag
 
     def image_handle(self, ocr_path):
-        for file in os.listdir(ocr_path):
+        for file in sorted(os.listdir(ocr_path)):
             if not file.startswith('.'):
                 print('Performing OCR on '+ocr_path + '/' + file)
                 myclass = vision_ocr(ocr_path + '/' + file)
@@ -62,11 +62,11 @@ class processed_ocr:
         return print(f'Handled images at {ocr_path}')
 
     def pdf_handle(self, ocr_path):
-        for folder in os.listdir(ocr_path):
+        for folder in sorted(os.listdir(ocr_path)):
             if (not folder.startswith('.')) and (folder != 'PHOTOS'):
 
                 print('In folder ' + folder)
-                for file in os.listdir(ocr_path + '/' + folder):
+                for file in sorted(os.listdir(ocr_path + '/' + folder)):
                     if not file.startswith('.'):
                         path = ocr_path + '/' + folder
                         print('Performing OCR on '+path + '/' + file)
