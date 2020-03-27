@@ -3,7 +3,7 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 //import Home from "../views/Home.vue";
 // import home from "../components/home.vue";
-// import test from "../components/test.vue";
+import down from "../components/download_page.vue";
 // import final from "../components/final.vue";
 import step1 from "../components/step1.vue";
 import step2 from "../components/step2.vue";
@@ -16,11 +16,11 @@ const routes = [
   //   name: "home",
   //   component: home
   // },
-  // {
-  //   path: "/test",
-  //   name: "test",
-  //   component: test
-  // },
+  {
+    path: "/results",
+    name: "download",
+    component: down
+  },
   // {
   //   path: "/final",
   //   name: "final",

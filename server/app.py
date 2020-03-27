@@ -6,11 +6,13 @@ Desc - Main flask app
 import io
 import os
 import re
+import zipfile
 import requests
 import sys
 import shutil
 import logging
 import eventlet
+from os.path import basename
 from pathlib import Path
 from pprint import pprint
 from flask_cors import CORS
@@ -21,7 +23,7 @@ from OCR import vision_ocr, processed_ocr
 from werkzeug.utils import secure_filename
 from preprocessing import image_preprocessing
 from flask_socketio import SocketIO, emit, send
-from flask import Flask, jsonify, request, session, render_template
+from flask import Flask, jsonify, request, session, render_template, send_file
 from report import *
 
 
@@ -85,10 +87,12 @@ def index():
     return render_template("index.html")
 
 # Testing purpose
-@app.route('/test-server', methods=['GET'])
+@app.route('/test', methods=['GET'])
 def test():
-    text = request.args.get('user')
-    return (jsonify({'text': text}))
+    socketio.emit('text_response',
+                  {'data': str('false')})
+
+    return None
 
 
 def spell_correction(text):
@@ -159,11 +163,6 @@ def master_file():
         master_file.save(os.path.join(misc_files, master_name))
 
         resp = jsonify({'message': 'File successfully uploaded'})
-        # TODO
-        text = 'HERE AT MASTER'
-        pprint(text)
-        socketio.emit('text_response',
-                      {'data': str(text)})
         resp.status_code = 200
         return resp
 
@@ -189,7 +188,7 @@ def correct_file():
         resp = jsonify({'message': 'File successfully uploaded'})
         pre = image_preprocessing(student_upload, preprocessed)
         pre.check_for_file_formats_and_process()
-        # TODO
+
         if (os.path.isdir("preprocessed/S1") and os.path.isdir("preprocessed/PHOTOS")):
             ocr_path = 'preprocessed'
             dir_flag = 'multiple'
@@ -223,11 +222,30 @@ def correct_file():
         # delete_dir(preprocessed)
         delete_dir(student_upload)
         pprint("Results are ready and stored in preprocessed!")
+
+        zipf = zipfile.ZipFile(PATH_PAPERS + '/'+'Student_results.zip', 'w', )
+        pprint('Zipping pdfs')
+        for root, dirs, files in os.walk(PATH_PAPERS):
+            for file in files:
+                if file.endswith(".pdf"):
+                    zipf.write(os.path.join(root, file),
+                               basename(os.path.join(root, file)))
+        zipf.close()
+        pprint('Done')
         socketio.emit('text_response',
-                      {'data': str('text')})
+                      {'data': str('false')})
         resp.status_code = 200
         return resp
 
 
+@app.route('/download')
+def download_all():
+
+    return send_file(PATH_PAPERS + '/'+'Student_results.zip',
+                     mimetype='zip',
+                     attachment_filename='Student_results.zip',
+                     as_attachment=True)
+
+
 if __name__ == '__main__':
-    socketio.run(app, debug=False,)
+    socketio.run(app, debug=False)

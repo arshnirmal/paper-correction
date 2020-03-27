@@ -16,7 +16,9 @@
           <b-icon icon="cloud" style="width:120px; height:120px;"></b-icon>
           <h1>Upload Addtional files (for better correction)</h1>
           <button class="samplebutton" v-on:click="addFiles()">Select Your Upload</button>
-          <button class="samplebutton" variant="success" v-on:click="submitFiles()">Submit</button>
+          <router-link :to="'results'">
+            <button class="samplebutton" variant="success" v-on:click="submitFiles()">Submit</button>
+          </router-link>
           <input type="file" id="files" ref="files" multiple v-on:change="handleFilesUpload()" />
           <div class="filesection">
             <div v-for="(file, key) in files" class="file-listing" v-bind:key="key">

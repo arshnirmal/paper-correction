@@ -4,7 +4,7 @@
       <div class="header-container">
         <div class="custom-header-bg">
           <div class="page-center">
-            <div class="logo">Step 2</div>
+            <div class="logo">Here you go!</div>
           </div>
         </div>
       </div>
@@ -13,18 +13,14 @@
     <div class="body-container-wrapper">
       <div class="body-container">
         <div class="page-center">
-          <b-icon icon="cloud" style="width:120px; height:120px;"></b-icon>
-          <h1>Upload Master Copy</h1>
-          <button class="samplebutton" v-on:click="addFiles()">Select Your Upload</button>
-          <router-link :to="'s3'">
-            <button class="samplebutton" variant="success" v-on:click="submitFiles()">Submit</button>
-          </router-link>
-          <input type="file" id="files" ref="files" multiple v-on:change="handleFilesUpload()" />
-          <div class="filesection">
-            <div v-for="(file, key) in files" class="file-listing" v-bind:key="key">
-              {{ file.name }}
-              <span class="remove-file" v-on:click="removeFile(key)">Remove</span>
-            </div>
+          <div v-if="spin">
+            <b-icon icon="cloud-download" style="width:120px; height:120px;"></b-icon>
+            <h1>Results are ready!</h1>
+            <button class="samplebutton" variant="success" v-on:click="downloadItem()">Download</button>
+          </div>
+          <div v-if="!spin">
+            <b-spinner label="Spinning"></b-spinner>
+            <h4>Please wait..</h4>
           </div>
         </div>
       </div>
@@ -46,77 +42,37 @@
 /* eslint-disable */
 import axios from "axios";
 export default {
-  /*
-      Defines the data used by the component
-    */
+  sockets: {
+    connect: function() {
+      console.log("connected");
+    },
+    text_response: function(msg) {
+      this.spin = msg.data;
+    }
+  },
   data() {
     return {
-      files: []
+      spin: ""
     };
   },
 
-  /*
-      Defines the method used by the component
-    */
   methods: {
-    /*
-        Adds a file
-      */
-    addFiles() {
-      this.$refs.files.click();
-    },
-
-    /*
-        Submits files to the server
-      */
-    submitFiles() {
-      /*
-          Initialize the form data
-        */
-      let formData = new FormData();
-
-      /*
-          Iteate over any file sent over appending the files
-          to the form data.
-        */
-      for (var i = 0; i < this.files.length; i++) {
-        let file = this.files[i];
-
-        formData.append("master", file);
-      }
-
-      /*
-          Make the request to the POST /select-files URL
-        */
+    downloadItem() {
       axios
-        .post("http://127.0.0.1:5000/master-upload", formData)
+        .get("http://127.0.0.1:5000/download", { responseType: "blob" })
         .then(response => {
-          console.log("Files have been uploaded");
+          var fileURL = window.URL.createObjectURL(new Blob([response.data]));
+          var fileLink = document.createElement("a");
+
+          fileLink.href = fileURL;
+          fileLink.setAttribute("download", "Student_result.zip");
+          document.body.appendChild(fileLink);
+
+          fileLink.click();
         })
-        .catch(err => {
-          console.error("Axios post error");
-        });
-    },
-
-    /*
-        Handles the uploading of files
-      */
-    handleFilesUpload() {
-      let uploadedFiles = this.$refs.files.files;
-
-      /*
-          Adds the uploaded file to the files array
-        */
-      for (var i = 0; i < uploadedFiles.length; i++) {
-        this.files.push(uploadedFiles[i]);
-      }
-    },
-
-    /*
-        Removes a select file the user has uploaded
-      */
-    removeFile(key) {
-      this.files.splice(key, 1);
+        .catch(console.error);
+      // axios.get("http://127.0.0.1:5000/test");
+      console.log(this.spin);
     }
   }
 };
