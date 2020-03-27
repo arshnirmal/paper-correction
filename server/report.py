@@ -20,6 +20,7 @@ import re
 import time
 from fpdf import FPDF
 from PIL import Image, ImageChops
+import fitz
 
 # Necessary imports
 # Import cosine similarity evaluation metric
@@ -278,8 +279,10 @@ def evaluate(all_student_answers, marks, reference_answers, flag):
     print('Found %s papers to be checked! Checking them now.....' % n_papers)
 
     for val in all_student_answers:
-        
-        
+    
+        lsm = []
+        ssm = []
+        nsm = []
         current_paper = val[0]
         attempted_ques = []
 
@@ -292,11 +295,15 @@ def evaluate(all_student_answers, marks, reference_answers, flag):
             print(current_q_number)
             reference_answer, total_marks = get_reference_answer_and_total_marks(
                 current_q_number, reference_answers, marks)
-            compare(reference_answer, current_answer, total_marks,
+            loose_sem_matches, strong_sem_matches, no_sem_matches = compare(reference_answer, current_answer, total_marks,
                     current_paper, current_q_number, flag)
+            lsm.append(loose_sem_matches)
+            ssm.append(strong_sem_matches)
+            nsm.append(no_sem_matches)
         start_time = time.time()
-        generate_pdf_reports_from_individual_feedbacks(
+        path_to_gen_pdf = generate_pdf_reports_from_individual_feedbacks(
             PATH_PAPERS, current_paper, attempted_ques, flag)
+        highlight(lsm, ssm, nsm, path_to_gen_pdf)
         print('completed generating a report, check folder')
         print('Based on our calculations, it will take the following time to generate reports for the next student:')
         print("--- %s seconds ---" % (time.time() - start_time))
@@ -352,7 +359,7 @@ def compare(reference_answer, current_answer, total_marks, current_paper, curren
     # Get similarity matrix (student answer sentences -> compared with -> answer key sentence)
     sim_mat_trans = sim_mat.transpose()
 
-    assigned_weights, ans_stu_sent, f = interpret_sim_mat_and_generate_report(
+    assigned_weights, ans_stu_sent, f, loose_sem_matches, strong_sem_matches, no_sem_matches = interpret_sim_mat_and_generate_report(
         sim_mat, sim_mat_trans, ans_key_sent, ans_stu_sent, PATH_PAPERS, current_paper, current_q_number, flag)
     weights = denormalise_sentences(
         ans_stu_sent, ans_stu_main, assigned_weights)
@@ -379,6 +386,8 @@ def compare(reference_answer, current_answer, total_marks, current_paper, curren
     print('Saved the .txt file')
 
     plot_assesment_df(df, PATH_PAPERS, current_paper, current_q_number, flag)
+    
+    return loose_sem_matches, strong_sem_matches, no_sem_matches
 
 
 ############ Helper Functions Pt. 2 ############
@@ -478,6 +487,9 @@ def interpret_sim_mat_and_generate_report(sim_mat, sim_mat_trans, ans_key_sent, 
 
     # Open a file for dumping text
     f = open(str(current_q_number)+'.txt', "a", encoding='latin-1')
+    
+    print('The student has written the following answer for this question: \n', file=f)
+    print(' '.join(ans_stu_sent)+'\n', file=f)
 
     # Feedback
     ind = np.argmax(sim_mat, axis=1)
@@ -495,7 +507,7 @@ def interpret_sim_mat_and_generate_report(sim_mat, sim_mat_trans, ans_key_sent, 
             strong_semantic_match.append([i, similarity])
 
     print('Student has not written anything covering the following points: \n', file=f)
-    #print('\n', file=f)
+
     if no_semantic_match != []:
         for i in range(len(no_semantic_match)):
             print(ans_key_sent[no_semantic_match[i][0]], file=f)
@@ -503,11 +515,10 @@ def interpret_sim_mat_and_generate_report(sim_mat, sim_mat_trans, ans_key_sent, 
         print('None. All points were adequately covered \n', file=f)
 
     print('------------------------------------------------------------------- \n', file=f)
-    #print('\n', file=f)
+    
 
-    print('------------------------------------------------------------------- \n', file=f)
     print('Student has loosely touched upon the following points, but a more adequate coverage was expected: \n', file=f)
-    #print('\n', file=f)
+    
 
     if loose_semantic_match != []:
         for i in range(len(loose_semantic_match)):
@@ -516,11 +527,10 @@ def interpret_sim_mat_and_generate_report(sim_mat, sim_mat_trans, ans_key_sent, 
         print('None. All points were adequately covered \n', file=f)
 
     print('------------------------------------------------------------------- \n', file=f)
-    #print('\n', file=f)
+    
 
-    print('------------------------------------------------------------------- \n', file=f)
     print('The student has covered the following points perfectly and as per expectation: \n', file=f)
-    #print('\n', file=f)
+    
 
     if strong_semantic_match != []:
         for i in range(len(strong_semantic_match)):
@@ -529,12 +539,11 @@ def interpret_sim_mat_and_generate_report(sim_mat, sim_mat_trans, ans_key_sent, 
         print('None of the expected points were adequately covered \n', file=f)
 
     print('------------------------------------------------------------------- \n', file=f)
-    #print('\n', file=f)
+    
 
     # ------- Student point of view --------- #
 
     ind = np.argmax(sim_mat_trans, axis=1)
-    # print(ind)
     no_semantic_match = []
     loose_semantic_match = []
     strong_semantic_match = []
@@ -549,50 +558,56 @@ def interpret_sim_mat_and_generate_report(sim_mat, sim_mat_trans, ans_key_sent, 
         else:
             strong_semantic_match.append([i, similarity])
 
-    print('------------------------------------------------------------------- \n', file=f)
-    print('The points that loosely matched the answer key were: \n', file=f)
+    #print('------------------------------------------------------------------- \n', file=f)
+    #print('The points that loosely matched the answer key were: \n', file=f)
     #print('\n', file=f)
 
+    loose_sem_matches = []
     if loose_semantic_match != []:
         for i in range(len(loose_semantic_match)):
-            print(ans_stu_sent[loose_semantic_match[i][0]], file=f)
+            #print(ans_stu_sent[loose_semantic_match[i][0]], file=f)
+            loose_sem_matches.append(ans_stu_sent[loose_semantic_match[i][0]])
             assigned_weights[ans_stu_sent[loose_semantic_match[i]
                                           [0]]] = loose_semantic_match[i][1]
     elif loose_semantic_match == []:
-        print('No such sentences \n', file=f)
+        print('No such sentences \n')
 
-    print('------------------------------------------------------------------- \n', file=f)
+    #print('------------------------------------------------------------------- \n', file=f)
     #print('\n', file=f)
 
-    print('------------------------------------------------------------------- \n', file=f)
-    print('The points that strongly matched the answer key were: \n', file=f)
+    #print('------------------------------------------------------------------- \n', file=f)
+    #print('The points that strongly matched the answer key were: \n', file=f)
     #print('\n', file=f)
 
+    strong_sem_matches = []
     if strong_semantic_match != []:
         for i in range(len(strong_semantic_match)):
-            print(ans_stu_sent[strong_semantic_match[i][0]], file=f)
+            #print(ans_stu_sent[strong_semantic_match[i][0]], file=f)
+            strong_sem_matches.append(ans_stu_sent[strong_semantic_match[i][0]])
             assigned_weights[ans_stu_sent[strong_semantic_match[i][0]]] = 1.0
     elif strong_semantic_match == []:
-        print('No such points \n', file=f)
+        print('No such points \n')
 
-    print('------------------------------------------------------------------- \n', file=f)
+    #print('------------------------------------------------------------------- \n', file=f)
     #print('\n', file=f)
 
-    print('------------------------------------------------------------------- \n', file=f)
-    print('The sentences that were extra and did not find a match in the the answer key were: \n', file=f)
+    #print('------------------------------------------------------------------- \n', file=f)
+    #print('The sentences that were extra and did not find a match in the the answer key were: \n', file=f)
     #print('\n', file=f)
 
+    no_sem_matches = []
     if no_semantic_match != []:
         for i in range(len(no_semantic_match)):
-            print(ans_stu_sent[no_semantic_match[i][0]], file=f)
+            #print(ans_stu_sent[no_semantic_match[i][0]], file=f)
+            no_sem_matches.append(ans_stu_sent[no_semantic_match[i][0]])
             assigned_weights[ans_stu_sent[no_semantic_match[i][0]]] = 0.0
     elif no_semantic_match == []:
-        print('No such sentences \n', file=f)
+        print('No such sentences \n')
 
-    print('------------------------------------------------------------------- \n', file=f)
+    #print('------------------------------------------------------------------- \n', file=f)
     #print('\n', file=f)
 
-    return assigned_weights, ans_stu_sent, f
+    return assigned_weights, ans_stu_sent, f, loose_sem_matches, strong_sem_matches, no_sem_matches
 
 
 # Semantically Normalise Sentences
@@ -860,6 +875,62 @@ def generate_pdf_reports_from_individual_feedbacks(PATH_PAPERS, current_paper, a
                        os.path.join(folder, str(i)+'.png'))
         # Close and save the current PDF for curret student paper
     pdf.output(os.path.join(folder, save_name), 'F')
+    return os.path.join(folder, save_name)
+    
+#### Experimental Code to highlight the answers, optimisations will be added once functionality is confirmed ####
+
+def highlight(lsm, ssm, nsm, path_to_gen_pdf):
+    
+
+    lists = [lsm,ssm,nsm]
+    doc = fitz.open(path_to_gen_pdf)
+    
+    for idx, _list in enumerate([lsm, ssm, nsm]):
+                
+        if idx==1:
+            colour = (0.467,0.867,0.467)  # pastel green
+        if idx==2:
+            colour  = (1,0.38,0.412) # pastel red
+        if idx==0:
+            colour = (0.992,0.992,0.558)  # pastel yellow
+                
+        for matches in _list:
+                  
+                    
+            if len(matches)!=0:
+                        
+                for text in matches:
+                            
+                    text_instances_per_page = []
+                    pages = []
+                    valid_pages = []
+                            
+                    for page in doc:
+                        pages.append(page)
+                        text_instances = page.searchFor(text)
+                        text_instances_per_page.append(text_instances)
+                            
+                            
+                    for idx, ele in enumerate(text_instances_per_page):
+                        if ele!=[]:
+                            valid_pages.append(idx)
+                                    
+                            
+                    text_instances = [x for x in text_instances_per_page if x != []]
+                    
+                    for inst in text_instances:
+                                
+                        page = doc[valid_pages[0]]
+                        highlight = page.addHighlightAnnot(inst)
+                        highlight.setColors(stroke=colour)
+                                    
+                            
+                    print('Saved here')
+                    doc.can_save_incrementally()
+                    doc.saveIncr()
+                    
+            else:
+                continue
 
 
 # dstore_delete()
