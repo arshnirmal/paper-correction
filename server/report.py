@@ -88,8 +88,9 @@ def process_student_paper(PATH_PAPERS):
                         f = open(os.path.join(PATH_PAPERS, folder, file), "r")
                         ans = f.read()
                         # print(ans)
+                        list_of_lines = strip_headers(ans.rsplit('\n'))
                         q_number, ans = get_answers_from_studentpaper(
-                            ans.rsplit('\n'))
+                            list_of_lines)
                 all_student_answers.append((idx+1, q_number, ans))
                 
     if 'PHOTOS' in folders and len(folders)==1:
@@ -104,7 +105,8 @@ def process_student_paper(PATH_PAPERS):
                         f = open(os.path.join(PATH_PAPERS, folder, file), "r")
                         ans = f.read()
                         #print(ans)
-                        q_number, ans = get_answers_from_studentpaper(ans.rsplit('\n'))
+                        list_of_lines = strip_headers(ans.rsplit('\n'))
+                        q_number, ans = get_answers_from_studentpaper(list_of_lines)
                 all_student_answers.append((idx+1, q_number, ans))                
 
     if 'PHOTOS' not in folders and len(folders) >= 1:
@@ -118,8 +120,9 @@ def process_student_paper(PATH_PAPERS):
                     f = open(os.path.join(PATH_PAPERS, folder, file), "r")
                     ans = f.read()
                     # print(ans)
+                    list_of_lines = strip_headers(ans.rsplit('\n'))
                     q_number, ans = get_answers_from_studentpaper(
-                        ans.rsplit('\n'))
+                        list_of_lines)
             all_student_answers.append((idx+1, q_number, ans))
 
     if 'PHOTOS' not in folders and len(folders) == 0:
@@ -225,6 +228,26 @@ def get_answers_from_studentpaper(list_of_lines):
         processed_ans.append(ans)
 
     return q_number, processed_ans
+    
+
+def strip_headers(list_of_lines):
+    
+    strip_candidates=[]
+    for idx, line in enumerate(list_of_lines):
+        if not line.startswith(('0', 'a', 'Q', 'q', 'O')):
+            strip_candidates.append(line)
+            continue
+        elif line.startswith(('0', 'a', 'Q', 'q', 'O')):
+            sub = line.rsplit()[0]
+            for char in sub:
+                if char.isdigit() or char== 'l' or char=='z' or char=='d' or char=='I' or char=='i':
+                    break
+            break
+                
+    for lines in strip_candidates:
+        list_of_lines.remove(lines)
+    
+    return list_of_lines
 
 
 def checks_for_getting_question_number(ans):
