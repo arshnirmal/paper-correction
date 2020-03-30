@@ -21,7 +21,13 @@ import time
 from fpdf import FPDF
 from PIL import Image, ImageChops
 import fitz
-hhh
+import string
+
+# Import Spacy and load POS model 
+import spacy
+import en_core_web_md
+print('Loading POS Tagger model')
+nlp = en_core_web_md.load()
 
 # Necessary imports
 # Import cosine similarity evaluation metric
@@ -295,6 +301,66 @@ def handle_delimiter_errors(tokenized_text):
     return tokenized_text
 
 
+def aware_capitalisation(ans_stu_sent):
+  
+    for idx, sent in enumerate(ans_stu_sent):
+
+        candidates=[]
+        propernouns = []
+        print(sent)
+        doc = nlp(sent)
+        for token in doc:
+          if token.tag_ == 'NNP' or token.tag_ == 'NNPS':
+            propernouns.append(token.text)
+
+        print(propernouns)
+
+
+        for word in sent.split():
+    
+          if word[0].isupper() and word.translate(str.maketrans('', '', string.punctuation.replace('.', ''))) not in propernouns:
+                candidates.append(word)
+    
+        count=0
+
+        print(candidates)
+        words = sent.split()
+        for idx2, word in enumerate(words):
+                if word in candidates:
+                  if not idx2==0:
+                    count+=1
+                    modify(idx, idx2, ans_stu_sent, count)
+                    
+    return ' '.join(ans_stu_sent)
+
+
+def handle_abbreviations(sent):
+
+  # better solution for this to come
+
+  sent = sent.replace('St.', 'St')
+  sent = sent.replace('Mr.', 'Mr')
+  sent = sent.replace('Mrs.', 'Mrs')
+  sent = sent.replace('Dr.', 'Dr')
+  sent = sent.replace('Hon.', 'Hon')
+  sent = sent.replace('Ave.', 'Avenue')
+  sent = sent.replace('appx.', 'approx')
+  sent = sent.replace('dept.', 'department')
+
+  return sent
+  
+
+def modify(idx_of_sent, idx_of_word_to_be_replaced, ans_stu_sent, count):
+
+  sent = handle_abbreviations(ans_stu_sent[idx_of_sent]).split()
+  word_at_idx_minus_one = sent[idx_of_word_to_be_replaced-1]
+  sent.remove(word_at_idx_minus_one)
+  sent.insert(idx_of_word_to_be_replaced-1, word_at_idx_minus_one+'.')
+  if len(' '.join(sent).split('.')[count-1].split())>=4:
+    ans_stu_sent[idx_of_sent] = ' '.join(sent)
+  else:
+    pass
+
 ################ End of helper functions Pt.1 ####################
 
 def evaluate(all_student_answers, marks, reference_answers, flag):
@@ -341,6 +407,7 @@ def compare(reference_answer, current_answer, total_marks, current_paper, curren
     ans_stu_sent = convert_answers_to_sentences(current_answer)
     ans_stu_sent = delete_erraneous_sentences(ans_stu_sent)
     ans_stu_sent = handle_delimiter_errors(ans_stu_sent)
+    ans_stu_sent = convert_answers_to_sentences(aware_capitalisation(ans_stu_sent))
     ans_key_sent = delete_erraneous_sentences(ans_key_sent)
 
     # print(ans_key_sent)
