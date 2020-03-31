@@ -2,6 +2,8 @@
 .vscode
 .DS_Store
 .idea
+
+secret_key.json
 # Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python
 
@@ -98,7 +100,7 @@ celerybeat-schedule
 .mr.developer.cfg
 .project
 .pydevproject
-server/tmp
+tmp/
 # mkdocs documentation
 /site
 
