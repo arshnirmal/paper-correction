@@ -43,7 +43,7 @@ nltk.download('punkt')
 
 # IF MODEL DOWNLOADED
 model = hub.load(
-    '/Users/parthchudasama/Projects/Automated-paper-correction/server/tmp/5')
+    '/Users/parthchudasama/Projects/paper-bitbucket/paper-correction/tmp/5')
 
 # model = hub.load(module_url)
 
@@ -695,7 +695,7 @@ def interpret_sim_mat_and_generate_report(sim_mat, sim_mat_trans, ans_key_sent, 
 
     #print('------------------------------------------------------------------- \n', file=f)
     #print('\n', file=f)
-
+    os.chdir(os.getcwd())
     return assigned_weights, ans_stu_sent, f, loose_sem_matches, strong_sem_matches, no_sem_matches
 
 
