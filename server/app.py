@@ -36,6 +36,8 @@ CORS(app)
 socketio = SocketIO(app, cors_allowed_origins='*')
 # check if dir exist & if not create one
 
+DEBUG = True
+
 
 def check_create_dir(path):
     Path(path).mkdir(parents=True, exist_ok=True)
@@ -186,35 +188,36 @@ def correct_file():
         correction_name = 'correction_file.{}'.format(correction_ext)
         autocorrect.save(os.path.join(misc_files, correction_name))
         resp = jsonify({'message': 'File successfully uploaded'})
-        pre = image_preprocessing(student_upload, preprocessed)
-        pre.check_for_file_formats_and_process()
+        if not DEBUG:
+            pre = image_preprocessing(student_upload, preprocessed)
+            pre.check_for_file_formats_and_process()
 
-        if (os.path.isdir("preprocessed/S1") and os.path.isdir("preprocessed/PHOTOS")):
-            ocr_path = 'preprocessed'
-            dir_flag = 'multiple'
-            print('\n\nUser has uploaded different formats')
-        elif os.path.isdir("preprocessed/PHOTOS"):
-            ocr_path = 'preprocessed/PHOTOS'
-            dir_flag = 'photo'
-            print("\n\nUser has uploaded images")
-        elif os.path.isdir("preprocessed/S1"):
-            ocr_path = 'preprocessed'
-            dir_flag = 'pdf'
-            print('\n\nUser has uploaded pdf')
+            if (os.path.isdir("preprocessed/S1") and os.path.isdir("preprocessed/PHOTOS")):
+                ocr_path = 'preprocessed'
+                dir_flag = 'multiple'
+                print('\n\nUser has uploaded different formats')
+            elif os.path.isdir("preprocessed/PHOTOS"):
+                ocr_path = 'preprocessed/PHOTOS'
+                dir_flag = 'photo'
+                print("\n\nUser has uploaded images")
+            elif os.path.isdir("preprocessed/S1"):
+                ocr_path = 'preprocessed'
+                dir_flag = 'pdf'
+                print('\n\nUser has uploaded pdf')
 
-        if dir_flag is None:
-            print('FATAL ERROR, RESTART')
-        handler = processed_ocr(dir_flag)
-        if dir_flag == 'photo':
-            handler.image_handle(ocr_path)
-            print('OCR results saved in PHOTOS')
-        if dir_flag == 'pdf':
-            handler.pdf_handle(ocr_path)
-            print('OCR results saved in preprocessed')
+            if dir_flag is None:
+                print('FATAL ERROR, RESTART')
+            handler = processed_ocr(dir_flag)
+            if dir_flag == 'photo':
+                handler.image_handle(ocr_path)
+                print('OCR results saved in PHOTOS')
+            if dir_flag == 'pdf':
+                handler.pdf_handle(ocr_path)
+                print('OCR results saved in preprocessed')
 
-        if dir_flag == 'multiple':
-            handler.multiple_handler(ocr_path)
-            print('OCR results saved in respective folder')
+            if dir_flag == 'multiple':
+                handler.multiple_handler(ocr_path)
+                print('OCR results saved in respective folder')
         dstore_delete()
         marks, reference_answers = process_answer_key(PATH_ANSKEY)
         all_student_answers, flag = process_student_paper(PATH_PAPERS)

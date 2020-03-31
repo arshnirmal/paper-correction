@@ -6,6 +6,8 @@ Created on Fri Mar 13 01:14:43 2020
 @author: bhargavdesai
 """
 
+import nltk
+from sklearn.metrics.pairwise import cosine_similarity
 from nltk.tokenize import TweetTokenizer
 from striprtf.striprtf import rtf_to_text
 # from absl import logging
@@ -23,7 +25,7 @@ from PIL import Image, ImageChops
 import fitz
 import string
 
-# Import Spacy and load POS model 
+# Import Spacy and load POS model
 import spacy
 import en_core_web_md
 print('Loading POS Tagger model')
@@ -31,23 +33,21 @@ nlp = en_core_web_md.load()
 
 # Necessary imports
 # Import cosine similarity evaluation metric
-from sklearn.metrics.pairwise import cosine_similarity
 
 # Import nltk
-import nltk
 nltk.download('punkt')
 
 
 # Download Universal Sentence Encoder
-module_url = "https://tfhub.dev/google/universal-sentence-encoder-large/5"
+# module_url = "https://tfhub.dev/google/universal-sentence-encoder-large/5"
 
 # IF MODEL DOWNLOADED
-# model = hub.load(
-#     '/Users/parthchudasama/Projects/Automated-paper-correction/server/tmp/5')
+model = hub.load(
+    '/Users/parthchudasama/Projects/Automated-paper-correction/server/tmp/5')
 
-model = hub.load(module_url)
+# model = hub.load(module_url)
 
-print("module %s loaded" % module_url)
+# print("module %s loaded" % module_url)
 
 # Reduce logging output.
 # logging.set_verbosity(logging.ERROR)
@@ -99,25 +99,26 @@ def process_student_paper(PATH_PAPERS):
                         q_number, ans = get_answers_from_studentpaper(
                             list_of_lines)
                 all_student_answers.append((idx+1, q_number, ans))
-                
-    if 'PHOTOS' in folders and len(folders)==1:
-        
-        flag=2
+
+    if 'PHOTOS' in folders and len(folders) == 1:
+
+        flag = 2
         print('Found only PHOTOS folder....')
         for idx, folder in enumerate(sorted((os.listdir(PATH_PAPERS)))):
             if not folder.startswith('.'):
                 for file in os.listdir(os.path.join(PATH_PAPERS, folder)):
                     if file.endswith('.txt'):
-                        #print(file)
+                        # print(file)
                         f = open(os.path.join(PATH_PAPERS, folder, file), "r")
                         ans = f.read()
-                        #print(ans)
+                        # print(ans)
                         list_of_lines = strip_headers(ans.rsplit('\n'))
-                        q_number, ans = get_answers_from_studentpaper(list_of_lines)
-                all_student_answers.append((idx+1, q_number, ans))                
+                        q_number, ans = get_answers_from_studentpaper(
+                            list_of_lines)
+                all_student_answers.append((idx+1, q_number, ans))
 
     if 'PHOTOS' not in folders and len(folders) >= 1:
-    
+
         flag = 0
         print('No PHOTOS folder found... continuing...')
         for idx, folder in enumerate(sorted((os.listdir(PATH_PAPERS)))):
@@ -235,11 +236,11 @@ def get_answers_from_studentpaper(list_of_lines):
         processed_ans.append(ans)
 
     return q_number, processed_ans
-    
+
 
 def strip_headers(list_of_lines):
-    
-    strip_candidates=[]
+
+    strip_candidates = []
     for idx, line in enumerate(list_of_lines):
         if not line.startswith(('0', 'a', 'Q', 'q', 'O')):
             strip_candidates.append(line)
@@ -247,13 +248,13 @@ def strip_headers(list_of_lines):
         elif line.startswith(('0', 'a', 'Q', 'q', 'O')):
             sub = line.rsplit()[0]
             for char in sub:
-                if char.isdigit() or char== 'l' or char=='z' or char=='d' or char=='I' or char=='i':
+                if char.isdigit() or char == 'l' or char == 'z' or char == 'd' or char == 'I' or char == 'i':
                     break
             break
-                
+
     for lines in strip_candidates:
         list_of_lines.remove(lines)
-    
+
     return list_of_lines
 
 
@@ -302,66 +303,66 @@ def handle_delimiter_errors(tokenized_text):
 
 
 def aware_capitalisation(ans_stu_sent):
-  
+
     for idx, sent in enumerate(ans_stu_sent):
 
-        candidates=[]
+        candidates = []
         propernouns = []
         print(sent)
         doc = nlp(sent)
         for token in doc:
-          if token.tag_ == 'NNP' or token.tag_ == 'NNPS':
-            propernouns.append(token.text)
+            if token.tag_ == 'NNP' or token.tag_ == 'NNPS':
+                propernouns.append(token.text)
 
         print(propernouns)
 
-
         for word in sent.split():
-    
-          if word[0].isupper() and word.translate(str.maketrans('', '', string.punctuation.replace('.', ''))) not in propernouns:
+
+            if word[0].isupper() and word.translate(str.maketrans('', '', string.punctuation.replace('.', ''))) not in propernouns:
                 candidates.append(word)
-    
-        count=0
+
+        count = 0
 
         print(candidates)
         words = sent.split()
         for idx2, word in enumerate(words):
-                if word in candidates:
-                  if not idx2==0:
-                    count+=1
+            if word in candidates:
+                if not idx2 == 0:
+                    count += 1
                     modify(idx, idx2, ans_stu_sent, count)
-                    
+
     return ' '.join(ans_stu_sent)
 
 
 def handle_abbreviations(sent):
 
-  # better solution for this to come
+    # better solution for this to come
 
-  sent = sent.replace('St.', 'St')
-  sent = sent.replace('Mr.', 'Mr')
-  sent = sent.replace('Mrs.', 'Mrs')
-  sent = sent.replace('Dr.', 'Dr')
-  sent = sent.replace('Hon.', 'Hon')
-  sent = sent.replace('Ave.', 'Avenue')
-  sent = sent.replace('appx.', 'approx')
-  sent = sent.replace('dept.', 'department')
+    sent = sent.replace('St.', 'St')
+    sent = sent.replace('Mr.', 'Mr')
+    sent = sent.replace('Mrs.', 'Mrs')
+    sent = sent.replace('Dr.', 'Dr')
+    sent = sent.replace('Hon.', 'Hon')
+    sent = sent.replace('Ave.', 'Avenue')
+    sent = sent.replace('appx.', 'approx')
+    sent = sent.replace('dept.', 'department')
 
-  return sent
-  
+    return sent
+
 
 def modify(idx_of_sent, idx_of_word_to_be_replaced, ans_stu_sent, count):
 
-  sent = handle_abbreviations(ans_stu_sent[idx_of_sent]).split()
-  word_at_idx_minus_one = sent[idx_of_word_to_be_replaced-1]
-  sent.remove(word_at_idx_minus_one)
-  sent.insert(idx_of_word_to_be_replaced-1, word_at_idx_minus_one+'.')
-  if len(' '.join(sent).split('.')[count-1].split())>=4:
-    ans_stu_sent[idx_of_sent] = ' '.join(sent)
-  else:
-    pass
+    sent = handle_abbreviations(ans_stu_sent[idx_of_sent]).split()
+    word_at_idx_minus_one = sent[idx_of_word_to_be_replaced-1]
+    sent.remove(word_at_idx_minus_one)
+    sent.insert(idx_of_word_to_be_replaced-1, word_at_idx_minus_one+'.')
+    if len(' '.join(sent).split('.')[count-1].split()) >= 4:
+        ans_stu_sent[idx_of_sent] = ' '.join(sent)
+    else:
+        pass
 
 ################ End of helper functions Pt.1 ####################
+
 
 def evaluate(all_student_answers, marks, reference_answers, flag):
 
@@ -369,7 +370,7 @@ def evaluate(all_student_answers, marks, reference_answers, flag):
     print('Found %s papers to be checked! Checking them now.....' % n_papers)
 
     for val in all_student_answers:
-    
+
         lsm = []
         ssm = []
         nsm = []
@@ -386,7 +387,7 @@ def evaluate(all_student_answers, marks, reference_answers, flag):
             reference_answer, total_marks = get_reference_answer_and_total_marks(
                 current_q_number, reference_answers, marks)
             loose_sem_matches, strong_sem_matches, no_sem_matches = compare(reference_answer, current_answer, total_marks,
-                    current_paper, current_q_number, flag)
+                                                                            current_paper, current_q_number, flag)
             lsm.append(loose_sem_matches)
             ssm.append(strong_sem_matches)
             nsm.append(no_sem_matches)
@@ -407,7 +408,8 @@ def compare(reference_answer, current_answer, total_marks, current_paper, curren
     ans_stu_sent = convert_answers_to_sentences(current_answer)
     ans_stu_sent = delete_erraneous_sentences(ans_stu_sent)
     ans_stu_sent = handle_delimiter_errors(ans_stu_sent)
-    ans_stu_sent = convert_answers_to_sentences(aware_capitalisation(ans_stu_sent))
+    ans_stu_sent = convert_answers_to_sentences(
+        aware_capitalisation(ans_stu_sent))
     ans_key_sent = delete_erraneous_sentences(ans_key_sent)
 
     # print(ans_key_sent)
@@ -477,7 +479,7 @@ def compare(reference_answer, current_answer, total_marks, current_paper, curren
     print('Saved the .txt file')
 
     plot_assesment_df(df, PATH_PAPERS, current_paper, current_q_number, flag)
-    
+
     return loose_sem_matches, strong_sem_matches, no_sem_matches
 
 
@@ -566,9 +568,9 @@ def interpret_sim_mat_and_generate_report(sim_mat, sim_mat_trans, ans_key_sent, 
 
     if flag == 1 and current_paper == 1:
         os.chdir(os.path.join(PATH_PAPERS, 'PHOTOS'))
-        
-    elif flag==2:
-      os.chdir(os.path.join(PATH_PAPERS, 'PHOTOS'))    
+
+    elif flag == 2:
+        os.chdir(os.path.join(PATH_PAPERS, 'PHOTOS'))
 
     elif flag == 1 and current_paper > 1:
         os.chdir(os.path.join(PATH_PAPERS, 'S'+str(current_paper-1)))
@@ -578,7 +580,7 @@ def interpret_sim_mat_and_generate_report(sim_mat, sim_mat_trans, ans_key_sent, 
 
     # Open a file for dumping text
     f = open(str(current_q_number)+'.txt', "a", encoding='latin-1')
-    
+
     print('The student has written the following answer for this question: \n', file=f)
     print(' '.join(ans_stu_sent)+'\n', file=f)
 
@@ -606,10 +608,8 @@ def interpret_sim_mat_and_generate_report(sim_mat, sim_mat_trans, ans_key_sent, 
         print('None. All points were adequately covered \n', file=f)
 
     print('------------------------------------------------------------------- \n', file=f)
-    
 
     print('Student has loosely touched upon the following points, but a more adequate coverage was expected: \n', file=f)
-    
 
     if loose_semantic_match != []:
         for i in range(len(loose_semantic_match)):
@@ -618,10 +618,8 @@ def interpret_sim_mat_and_generate_report(sim_mat, sim_mat_trans, ans_key_sent, 
         print('None. All points were adequately covered \n', file=f)
 
     print('------------------------------------------------------------------- \n', file=f)
-    
 
     print('The student has covered the following points perfectly and as per expectation: \n', file=f)
-    
 
     if strong_semantic_match != []:
         for i in range(len(strong_semantic_match)):
@@ -630,7 +628,6 @@ def interpret_sim_mat_and_generate_report(sim_mat, sim_mat_trans, ans_key_sent, 
         print('None of the expected points were adequately covered \n', file=f)
 
     print('------------------------------------------------------------------- \n', file=f)
-    
 
     # ------- Student point of view --------- #
 
@@ -674,7 +671,8 @@ def interpret_sim_mat_and_generate_report(sim_mat, sim_mat_trans, ans_key_sent, 
     if strong_semantic_match != []:
         for i in range(len(strong_semantic_match)):
             #print(ans_stu_sent[strong_semantic_match[i][0]], file=f)
-            strong_sem_matches.append(ans_stu_sent[strong_semantic_match[i][0]])
+            strong_sem_matches.append(
+                ans_stu_sent[strong_semantic_match[i][0]])
             assigned_weights[ans_stu_sent[strong_semantic_match[i][0]]] = 1.0
     elif strong_semantic_match == []:
         print('No such points \n')
@@ -795,14 +793,14 @@ def denormalise_sentences(ans_stu_sent, ans_stu_main, assigned_weights):
 
 # Plot breakup of marks for an answer
 
+
 def trim(im):
-    bg = Image.new(im.mode, im.size, im.getpixel((0,0)))
+    bg = Image.new(im.mode, im.size, im.getpixel((0, 0)))
     diff = ImageChops.difference(im, bg)
     diff = ImageChops.add(diff, diff, 2.0, -100)
     bbox = diff.getbbox()
     if bbox:
         return im.crop(bbox)
-
 
 
 def plot_assesment_df(df, path, current_paper, current_q_number, flag):
@@ -812,10 +810,10 @@ def plot_assesment_df(df, path, current_paper, current_q_number, flag):
     ax.axis('off')
     ax.axis('tight')
 
-    ax.table(cellText=df.values, colWidths=[1.0]*len(df.columns.values), colLabels=df.columns, cellLoc='center').scale(1, 5)
+    ax.table(cellText=df.values, colWidths=[
+             1.0]*len(df.columns.values), colLabels=df.columns, cellLoc='center').scale(1, 5)
     fig.tight_layout()
-    
-    
+
     if flag == 1 and current_paper == 1:
         save_path = os.path.join(path, 'PHOTOS', str(current_q_number)+'.png')
         plt.savefig(save_path, bbox_inches='tight')
@@ -823,38 +821,39 @@ def plot_assesment_df(df, path, current_paper, current_q_number, flag):
         im = Image.open(save_path)
         im = trim(im)
         im = im.convert('RGB')
-        im.save(save_path) 
+        im.save(save_path)
         print('Plotted assesment .png')
-        
-        
-    elif flag==2:
+
+    elif flag == 2:
         save_path = os.path.join(path, 'PHOTOS', str(current_q_number)+'.png')
         plt.savefig(save_path, bbox_inches='tight')
         plt.close()
         im = Image.open(save_path)
         im = trim(im)
         im = im.convert('RGB')
-        im.save(save_path) 
-        print('Plotted assesment .png')    
+        im.save(save_path)
+        print('Plotted assesment .png')
 
     elif flag == 1 and current_paper > 1:
-        save_path = os.path.join(path, 'S'+str(current_paper-1), str(current_q_number)+'.png')
+        save_path = os.path.join(
+            path, 'S'+str(current_paper-1), str(current_q_number)+'.png')
         plt.savefig(save_path, bbox_inches='tight')
         plt.close()
         im = Image.open(save_path)
         im = trim(im)
         im = im.convert('RGB')
-        im.save(save_path) 
+        im.save(save_path)
         print('Plotted assesment .png')
 
     else:
-        save_path = os.path.join(path, 'S'+str(current_paper), str(current_q_number)+'.png')
+        save_path = os.path.join(
+            path, 'S'+str(current_paper), str(current_q_number)+'.png')
         plt.savefig(save_path, bbox_inches='tight')
         plt.close()
         im = Image.open(save_path)
         im = trim(im)
         im = im.convert('RGB')
-        im.save(save_path) 
+        im.save(save_path)
         print('Plotted assesment .png')
 
 
@@ -938,10 +937,10 @@ def generate_pdf_reports_from_individual_feedbacks(PATH_PAPERS, current_paper, a
     if flag == 1 and current_paper == 1:
         folder = os.path.join(PATH_PAPERS, 'PHOTOS')
         save_name = 'PHOTOS.pdf'
-        
-    elif flag==2:
-        folder = os.path.join(PATH_PAPERS,'PHOTOS')
-        save_name = 'PHOTOS.pdf'    
+
+    elif flag == 2:
+        folder = os.path.join(PATH_PAPERS, 'PHOTOS')
+        save_name = 'PHOTOS.pdf'
 
     elif flag == 1 and current_paper > 1:
         folder = os.path.join(PATH_PAPERS, 'S'+str(current_paper-1))
@@ -967,59 +966,56 @@ def generate_pdf_reports_from_individual_feedbacks(PATH_PAPERS, current_paper, a
         # Close and save the current PDF for curret student paper
     pdf.output(os.path.join(folder, save_name), 'F')
     return os.path.join(folder, save_name)
-    
+
 #### Experimental Code to highlight the answers, optimisations will be added once functionality is confirmed ####
 
-def highlight(lsm, ssm, nsm, path_to_gen_pdf):
-    
 
-    lists = [lsm,ssm,nsm]
+def highlight(lsm, ssm, nsm, path_to_gen_pdf):
+
+    lists = [lsm, ssm, nsm]
     doc = fitz.open(path_to_gen_pdf)
-    
+
     for idx, _list in enumerate([lsm, ssm, nsm]):
-                
-        if idx==1:
-            colour = (0.467,0.867,0.467)  # pastel green
-        if idx==2:
-            colour  = (1,0.38,0.412) # pastel red
-        if idx==0:
-            colour = (0.992,0.992,0.558)  # pastel yellow
-                
+
+        if idx == 1:
+            colour = (0.467, 0.867, 0.467)  # pastel green
+        if idx == 2:
+            colour = (1, 0.38, 0.412)  # pastel red
+        if idx == 0:
+            colour = (0.992, 0.992, 0.558)  # pastel yellow
+
         for matches in _list:
-                  
-                    
-            if len(matches)!=0:
-                        
+
+            if len(matches) != 0:
+
                 for text in matches:
-                            
+
                     text_instances_per_page = []
                     pages = []
                     valid_pages = []
-                            
+
                     for page in doc:
                         pages.append(page)
                         text_instances = page.searchFor(text)
                         text_instances_per_page.append(text_instances)
-                            
-                            
+
                     for idx, ele in enumerate(text_instances_per_page):
-                        if ele!=[]:
+                        if ele != []:
                             valid_pages.append(idx)
-                                    
-                            
-                    text_instances = [x for x in text_instances_per_page if x != []]
-                    
+
+                    text_instances = [
+                        x for x in text_instances_per_page if x != []]
+
                     for inst in text_instances:
-                                
+
                         page = doc[valid_pages[0]]
                         highlight = page.addHighlightAnnot(inst)
                         highlight.setColors(stroke=colour)
-                                    
-                            
+
                     print('Saved here')
                     doc.can_save_incrementally()
                     doc.saveIncr()
-                    
+
             else:
                 continue
 
