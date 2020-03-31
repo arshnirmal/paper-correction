@@ -2,31 +2,25 @@
 
 End to end solution for hassle free paper correction, for universities/teachers/students
 
-## Setup
+## Usage
 
-Make sure python is installed  
-If you are using conda
+Clone the repo
 
-```bash
-conda create -n <env name here>
-conda install pip
-```
+    git clone https://parthchudasama@bitbucket.org/parthchudasama/paper-correction.git`
+	cd paper-correction
+
 
 ## Installation
-
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install required packages.
-
+**We suggest you create a new envionment**
 ```bash
 pip install -r requirements.txt
 ```
-
-## Usage
+## Run
 
 ```python
-conda activate <env name here>
-jupyter notebook
+python app.py
 ```
-
+The app will be available at  `127.0.0.1:5000/`
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
