@@ -52,7 +52,7 @@ The app will be available at  `127.0.0.1:5000/`
 ## Application description 
 The application is divided in to 4 step
 ### Step 1
-![alt text](static/screenshots/Step\1.png)
+![picture](static/screenshots/Step 1.png)
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
