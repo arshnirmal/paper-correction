@@ -50,11 +50,11 @@ The application is divided in to 4 step
 ![picture](https://bitbucket.org/parthchudasama/paper-correction/raw/a84cc7c98a1c97a86f2be15b18a9d2766025c7f2/static/screenshots/Step%202.png)
 
 ### Step 3:
-Handwriting recognition from google vision is not 100% acuracte. We have ensured through tests that the accuracy remains acceptable by means of image preporcessing. To further ensure that the words and sentences are detected correctly, we recommend user to upload material that has been used to refer by students (Reference book, papers etc)
+1. Handwriting recognition from google vision is not 100% acuracte. We have ensured through tests that the accuracy remains acceptable by means of image preporcessing. To further ensure that the words and sentences are detected correctly, we recommend user to upload material that has been used to refer by students (Reference book, papers etc)
 ![picture](https://bitbucket.org/parthchudasama/paper-correction/raw/a84cc7c98a1c97a86f2be15b18a9d2766025c7f2/static/screenshots/step%203.png)
 
 ### Step 4:
-The last step generates a zip file where results are each student are stored along with deatailed review of each paper. 
+1. The last step generates a zip file where results are each student are stored along with deatailed review of each paper. 
 Please be patient at this step as it might take a while depending upon the network connection.
 ![picture](https://bitbucket.org/parthchudasama/paper-correction/raw/a84cc7c98a1c97a86f2be15b18a9d2766025c7f2/static/screenshots/step%204.png)
 ## License
@@ -62,6 +62,3 @@ Please be patient at this step as it might take a while depending upon the netwo
 [MIT](https://choosealicense.com/licenses/mit/)
 
 
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
