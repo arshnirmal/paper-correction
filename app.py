@@ -36,7 +36,7 @@ CORS(app)
 socketio = SocketIO(app, cors_allowed_origins='*')
 # check if dir exist & if not create one
 
-DEBUG = True
+DEBUG = False
 
 
 def check_create_dir(path):
