@@ -39,15 +39,15 @@ nltk.download('punkt')
 
 
 # Download Universal Sentence Encoder
-# module_url = "https://tfhub.dev/google/universal-sentence-encoder-large/5"
+module_url = "https://tfhub.dev/google/universal-sentence-encoder-large/5"
 
 # IF MODEL DOWNLOADED
-model = hub.load(
-    '/Users/parthchudasama/Projects/paper-bitbucket/paper-correction/tmp/5')
+# model = hub.load(
+# '/Users/parthchudasama/Projects/paper-bitbucket/paper-correction/tmp/5')
 
-# model = hub.load(module_url)
+model = hub.load(module_url)
 
-# print("module %s loaded" % module_url)
+print("module %s loaded" % module_url)
 
 # Reduce logging output.
 # logging.set_verbosity(logging.ERROR)
