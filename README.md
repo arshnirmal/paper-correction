@@ -6,7 +6,7 @@ End to end solution for hassle free paper correction, for universities/teachers/
 
 Clone the repo
 
-    git clone https://parthchudasama@bitbucket.org/parthchudasama/paper-correction.git`
+    git clone https://parthchudasama@bitbucket.org/parthchudasama/paper-correction.git
 	cd paper-correction
 
 
