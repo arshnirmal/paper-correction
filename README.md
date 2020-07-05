@@ -55,8 +55,3 @@ In order to test application, we have provided some test files which are present
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
-
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
