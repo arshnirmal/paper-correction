@@ -6,7 +6,8 @@ import re
 from enum import Enum
 from pprint import pprint
 from google.cloud import vision
-from google.cloud.vision import types
+# from google.cloud.vision import types
+from google.cloud.vision_v1 import types
 from spellchecker import SpellChecker
 
 # setting GCP creds

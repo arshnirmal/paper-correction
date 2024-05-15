@@ -27,9 +27,12 @@ import string
 
 # Import Spacy and load POS model
 import spacy
-import en_core_web_md
+# from spacy.lang.en import English
+# import en_core_web_md
+import en_core_web_sm
 print('Loading POS Tagger model')
-nlp = en_core_web_md.load()
+# nlp = en_core_web_md.load()
+nlp = en_core_web_sm.load()
 
 # Necessary imports
 # Import cosine similarity evaluation metric
@@ -458,7 +461,7 @@ def compare(reference_answer, current_answer, total_marks, current_paper, curren
         ans_stu_sent, ans_stu_main, assigned_weights)
 
     # To set each column cell to be just as big as it needs to be in order to fully display it's content.
-    #pd.set_option('display.max_colwidth', 0)
+    # pd.set_option('display.max_colwidth', 0)
     pd.options.display.max_colwidth = 50
 
     marks_per_point = (total_marks)/len(ans_key_sent)
@@ -526,7 +529,7 @@ def delete_erraneous_sentences(ans_stu_sent):
 
     for idx, sent in enumerate(ans_stu_sent):
         if len(sent.split()) == 1:
-            del(ans_stu_sent[idx])
+            del (ans_stu_sent[idx])
     return ans_stu_sent
 
 
@@ -646,55 +649,55 @@ def interpret_sim_mat_and_generate_report(sim_mat, sim_mat_trans, ans_key_sent, 
         else:
             strong_semantic_match.append([i, similarity])
 
-    #print('------------------------------------------------------------------- \n', file=f)
-    #print('The points that loosely matched the answer key were: \n', file=f)
-    #print('\n', file=f)
+    # print('------------------------------------------------------------------- \n', file=f)
+    # print('The points that loosely matched the answer key were: \n', file=f)
+    # print('\n', file=f)
 
     loose_sem_matches = []
     if loose_semantic_match != []:
         for i in range(len(loose_semantic_match)):
-            #print(ans_stu_sent[loose_semantic_match[i][0]], file=f)
+            # print(ans_stu_sent[loose_semantic_match[i][0]], file=f)
             loose_sem_matches.append(ans_stu_sent[loose_semantic_match[i][0]])
             assigned_weights[ans_stu_sent[loose_semantic_match[i]
                                           [0]]] = loose_semantic_match[i][1]
     elif loose_semantic_match == []:
         print('No such sentences \n')
 
-    #print('------------------------------------------------------------------- \n', file=f)
-    #print('\n', file=f)
+    # print('------------------------------------------------------------------- \n', file=f)
+    # print('\n', file=f)
 
-    #print('------------------------------------------------------------------- \n', file=f)
-    #print('The points that strongly matched the answer key were: \n', file=f)
-    #print('\n', file=f)
+    # print('------------------------------------------------------------------- \n', file=f)
+    # print('The points that strongly matched the answer key were: \n', file=f)
+    # print('\n', file=f)
 
     strong_sem_matches = []
     if strong_semantic_match != []:
         for i in range(len(strong_semantic_match)):
-            #print(ans_stu_sent[strong_semantic_match[i][0]], file=f)
+            # print(ans_stu_sent[strong_semantic_match[i][0]], file=f)
             strong_sem_matches.append(
                 ans_stu_sent[strong_semantic_match[i][0]])
             assigned_weights[ans_stu_sent[strong_semantic_match[i][0]]] = 1.0
     elif strong_semantic_match == []:
         print('No such points \n')
 
-    #print('------------------------------------------------------------------- \n', file=f)
-    #print('\n', file=f)
+    # print('------------------------------------------------------------------- \n', file=f)
+    # print('\n', file=f)
 
-    #print('------------------------------------------------------------------- \n', file=f)
-    #print('The sentences that were extra and did not find a match in the the answer key were: \n', file=f)
-    #print('\n', file=f)
+    # print('------------------------------------------------------------------- \n', file=f)
+    # print('The sentences that were extra and did not find a match in the the answer key were: \n', file=f)
+    # print('\n', file=f)
 
     no_sem_matches = []
     if no_semantic_match != []:
         for i in range(len(no_semantic_match)):
-            #print(ans_stu_sent[no_semantic_match[i][0]], file=f)
+            # print(ans_stu_sent[no_semantic_match[i][0]], file=f)
             no_sem_matches.append(ans_stu_sent[no_semantic_match[i][0]])
             assigned_weights[ans_stu_sent[no_semantic_match[i][0]]] = 0.0
     elif no_semantic_match == []:
         print('No such sentences \n')
 
-    #print('------------------------------------------------------------------- \n', file=f)
-    #print('\n', file=f)
+    # print('------------------------------------------------------------------- \n', file=f)
+    # print('\n', file=f)
     os.chdir(os.getcwd())
     return assigned_weights, ans_stu_sent, f, loose_sem_matches, strong_sem_matches, no_sem_matches
 

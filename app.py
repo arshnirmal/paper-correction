@@ -18,7 +18,8 @@ from pprint import pprint
 from flask_cors import CORS
 from google.cloud import vision
 from spellchecker import SpellChecker
-from google.cloud.vision import types
+# from google.cloud.vision import types
+from google.cloud.vision_v1 import types
 from OCR import vision_ocr, processed_ocr
 from werkzeug.utils import secure_filename
 from preprocessing import image_preprocessing
@@ -89,6 +90,8 @@ def index():
     return render_template("index.html")
 
 # Testing purpose
+
+
 @app.route('/test', methods=['GET'])
 def test():
     socketio.emit('text_response',
@@ -118,6 +121,8 @@ def delete_dir(mydir):
     return None
 
 # get student file and save in student_files dir
+
+
 @app.route('/student-upload', methods=['POST'])
 def upload_file():
     # check if the post request has the file part`
@@ -144,6 +149,8 @@ def upload_file():
         return resp
 
 # get master and correction file
+
+
 @app.route('/master-upload', methods=['POST'])
 def master_file():
     # check if the post request has the file part`
