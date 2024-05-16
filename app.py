@@ -1,8 +1,3 @@
-'''
-Author - Parth Chudasama
-Desc - Main flask app
-'''
-
 import io
 import os
 import re
@@ -11,251 +6,172 @@ import requests
 import sys
 import shutil
 import logging
-import eventlet
-from os.path import basename
 from pathlib import Path
 from pprint import pprint
+from flask import Flask, jsonify, request, render_template, send_file
 from flask_cors import CORS
+from flask_socketio import SocketIO
 from google.cloud import vision
 from spellchecker import SpellChecker
-# from google.cloud.vision import types
-from google.cloud.vision_v1 import types
-from OCR import vision_ocr, processed_ocr
 from werkzeug.utils import secure_filename
-from preprocessing import image_preprocessing
-from flask_socketio import SocketIO, emit, send
-from flask import Flask, jsonify, request, session, render_template, send_file
-from report import *
+from OCR import VisionOCR, ProcessedOCR
+from preprocessing import ImagePreprocessing
+from report import process_answer_key, process_student_paper, evaluate
 
-
+# Initialize Flask app
 app = Flask(__name__, template_folder="templates")
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
-# Enble Cors
+# Enable CORS
 CORS(app)
 
+# Initialize SocketIO
 socketio = SocketIO(app, cors_allowed_origins='*')
-# check if dir exist & if not create one
 
-DEBUG = False
+# Set up logging
+logging.getLogger('socketio').disabled = True
+logging.getLogger('engineio').disabled = True
 
-
-def check_create_dir(path):
-    Path(path).mkdir(parents=True, exist_ok=True)
-    return None
-
-
-def dstore_delete():
-    print('Deleteting .DSstore')
-    for root, dirs, files in os.walk(os.getcwd()):
-        for file in files:
-            if file.endswith('.DS_Store'):
-                path = os.path.join(root, file)
-
-                print("Deleting: %s" % (path))
-
-                if os.remove(path):
-                    print("Unable to delete!")
-                else:
-                    pass
-    print('Deleted .DSstore')
-    return None
-
-
-# Disables GET POST logs
-log = logging.getLogger('socketio')
-log.disabled = True
-log1 = logging.getLogger('engineio')
-log1.disabled = True
-
-# setting GCP creds
+# Set Google Cloud credentials
 credential_path = "/mnt/data/Arsh/Computer Science/Python/paper-correction/secret_key.json"
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = credential_path
 
-# Check and create required folders
-student_upload = os.getcwd() + '/student_files'
-check_create_dir(student_upload)
-misc_files = os.getcwd() + '/misc_files'
-check_create_dir(misc_files)
-preprocessed = os.getcwd() + '/preprocessed'
-check_create_dir(preprocessed)
-dstore_delete()
+# Directory paths
+student_upload = os.path.join(os.getcwd(), 'student_files')
+misc_files = os.path.join(os.getcwd(), 'misc_files')
+preprocessed = os.path.join(os.getcwd(), 'preprocessed')
+PATH_ANSKEY = os.path.join(misc_files, 'master_file.txt')
+PATH_PAPERS = preprocessed
 
-# PATH_PAPERS = preprocessed
-PATH_ANSKEY = os.getcwd() + '/misc_files/master_file.txt'
-PATH_PAPERS = os.getcwd() + '/preprocessed'
+# Ensure required directories exist
+Path(student_upload).mkdir(parents=True, exist_ok=True)
+Path(misc_files).mkdir(parents=True, exist_ok=True)
+Path(preprocessed).mkdir(parents=True, exist_ok=True)
+
+# Helper function to delete .DS_Store files
+
+
+def dstore_delete():
+    for root, dirs, files in os.walk(os.getcwd()):
+        for file in files:
+            if file == '.DS_Store':
+                os.remove(os.path.join(root, file))
+
+
+dstore_delete()
 
 
 @app.route('/')
 def index():
     return render_template("index.html")
 
-# Testing purpose
-
 
 @app.route('/test', methods=['GET'])
 def test():
-    socketio.emit('text_response',
-                  {'data': str('false')})
-
-    return None
+    socketio.emit('text_response', {'data': str('false')})
+    return '', 204
 
 
 def spell_correction(text):
-    correction = []
     spell = SpellChecker()
-    spell.word_frequency.load_text_file(misc_files+'/correction_file.txt')
-    word_list = list(text.split(" "))
-    for word in word_list:
-        correction.append(spell.correction(word))
-    corr_text = ' '.join(correction)
-    return corr_text
-
-# remove dirs **only testing phase
-
-
-def delete_dir(mydir):
-    try:
-        shutil.rmtree(mydir)
-    except OSError as e:
-        print("Error: %s - %s." % (e.filename, e.strerror))
-    return None
-
-# get student file and save in student_files dir
+    spell.word_frequency.load_text_file(
+        os.path.join(misc_files, 'correction_file.txt'))
+    correction = [spell.correction(word) if spell.correction(
+        word) else word for word in text.split()]
+    return ' '.join(correction)
 
 
 @app.route('/student-upload', methods=['POST'])
 def upload_file():
-    # check if the post request has the file part`
     if 'file' not in request.files:
-        resp = jsonify({'message': 'No file part in the request'})
-        resp.status_code = 400
-        return resp
+        return jsonify({'message': 'No file part in the request'}), 400
+
     files = request.files.getlist('file')
-    if files:
-        if not os.path.isdir('student_files'):
-            os.mkdir('student_files')
+    if not files:
+        return jsonify({'message': 'No files provided'}), 400
 
-        for file in files:
-            filename = secure_filename(file.filename)
-            ext = filename.split('.')[-1]
-            file_name = 'student_{}.{}'.format(files.index(file), ext)
-            file.save(os.path.join(student_upload, file_name))
-            resp = jsonify({'message': 'File successfully uploaded'})
-            # text = 'FILE UPLAODEED'
-            # pprint(text)
-            # socketio.emit('text_response',
-            #               {'data': str(text)})
-            resp.status_code = 200
-        return resp
+    for file in files:
+        filename = secure_filename(file.filename)
+        ext = filename.split('.')[-1]
+        file_name = f'student_{files.index(file)}.{ext}'
+        file.save(os.path.join(student_upload, file_name))
 
-# get master and correction file
+    return jsonify({'message': 'File(s) successfully uploaded'}), 200
 
 
 @app.route('/master-upload', methods=['POST'])
 def master_file():
-    # check if the post request has the file part`
-    if ('master' not in request.files) and ('correction' not in request.files):
-        print('no file')
-        resp = jsonify({'message': 'No file part in the request'})
-        resp.status_code = 400
-        return resp
+    if 'master' not in request.files and 'correction' not in request.files:
+        return jsonify({'message': 'No file part in the request'}), 400
 
     master_file = request.files.get('master')
-
     if master_file:
-        if not os.path.isdir('misc_files'):
-            os.mkdir('misc_files')
-        # for master
         master_filename = secure_filename(master_file.filename)
-        master_ext = master_filename.split('.')[-1]
-        master_name = 'master_file.{}'.format(master_ext)
+        master_name = f'master_file.{master_filename.split(".")[-1]}'
         master_file.save(os.path.join(misc_files, master_name))
 
-        resp = jsonify({'message': 'File successfully uploaded'})
-        resp.status_code = 200
-        return resp
+    return jsonify({'message': 'File successfully uploaded'}), 200
 
 
 @app.route('/correct-upload', methods=['POST'])
 def correct_file():
     if 'correction' not in request.files:
-        print('no file')
-        resp = jsonify({'message': 'No file part in the request'})
-        resp.status_code = 400
-        return resp
+        return jsonify({'message': 'No file part in the request'}), 400
 
     autocorrect = request.files.get('correction')
     if autocorrect:
-        if not os.path.isdir('misc_files'):
-            os.mkdir('misc_files')
         correction_filename = secure_filename(autocorrect.filename)
-        correction_ext = correction_filename.split('.')[-1]
-        if correction_ext != 'txt':
-            print('Text file not found for autocorrection, kindly change format')
-        correction_name = 'correction_file.{}'.format(correction_ext)
+        correction_name = f'correction_file.{correction_filename.split(".")[-1]}'
+        if correction_name.split('.')[-1] != 'txt':
+            return jsonify({'message': 'File format not supported, please upload a .txt file'}), 400
         autocorrect.save(os.path.join(misc_files, correction_name))
-        resp = jsonify({'message': 'File successfully uploaded'})
-        if not DEBUG:
-            pre = image_preprocessing(student_upload, preprocessed)
-            pre.check_for_file_formats_and_process()
 
-            if (os.path.isdir("preprocessed/S1") and os.path.isdir("preprocessed/PHOTOS")):
-                ocr_path = 'preprocessed'
-                dir_flag = 'multiple'
-                print('\n\nUser has uploaded different formats')
-            elif os.path.isdir("preprocessed/PHOTOS"):
-                ocr_path = 'preprocessed/PHOTOS'
-                dir_flag = 'photo'
-                print("\n\nUser has uploaded images")
-            elif os.path.isdir("preprocessed/S1"):
-                ocr_path = 'preprocessed'
-                dir_flag = 'pdf'
-                print('\n\nUser has uploaded pdf')
+        preprocessor = ImagePreprocessing(student_upload, preprocessed)
+        preprocessor.check_and_process_files()
 
-            if dir_flag is None:
-                print('FATAL ERROR, RESTART')
-            handler = processed_ocr(dir_flag)
+        dir_flag = None
+        if os.path.isdir(os.path.join(preprocessed, "S1")) and os.path.isdir(os.path.join(preprocessed, "PHOTOS")):
+            ocr_path, dir_flag = preprocessed, 'multiple'
+        elif os.path.isdir(os.path.join(preprocessed, "PHOTOS")):
+            ocr_path, dir_flag = os.path.join(
+                preprocessed, "PHOTOS"), 'photo'
+        elif os.path.isdir(os.path.join(preprocessed, "S1")):
+            ocr_path, dir_flag = preprocessed, 'pdf'
+
+        if dir_flag:
+            handler = ProcessedOCR(dir_flag)
             if dir_flag == 'photo':
-                handler.image_handle(ocr_path)
-                print('OCR results saved in PHOTOS')
-            if dir_flag == 'pdf':
-                handler.pdf_handle(ocr_path)
-                print('OCR results saved in preprocessed')
+                handler.handle_image(ocr_path)
+            elif dir_flag == 'pdf':
+                handler.handle_pdf(ocr_path)
+            elif dir_flag == 'multiple':
+                handler.handle_multiple(ocr_path)
+        else:
+            return jsonify({'message': 'Error processing files, please restart'}), 500
 
-            if dir_flag == 'multiple':
-                handler.multiple_handler(ocr_path)
-                print('OCR results saved in respective folder')
         dstore_delete()
+
         marks, reference_answers = process_answer_key(PATH_ANSKEY)
         all_student_answers, flag = process_student_paper(PATH_PAPERS)
         evaluate(all_student_answers, marks, reference_answers, flag)
-        # delete_dir(preprocessed)
-        delete_dir(student_upload)
+
+        shutil.rmtree(student_upload)
         pprint("Results are ready and stored in preprocessed!")
 
-        zipf = zipfile.ZipFile(PATH_PAPERS + '/'+'Student_results.zip', 'w', )
-        pprint('Zipping pdfs')
-        for root, dirs, files in os.walk(PATH_PAPERS):
-            for file in files:
-                if file.endswith(".pdf"):
-                    zipf.write(os.path.join(root, file),
-                               basename(os.path.join(root, file)))
-        zipf.close()
-        pprint('Done')
-        socketio.emit('text_response',
-                      {'data': str('false')})
-        resp.status_code = 200
-        return resp
+        with zipfile.ZipFile(os.path.join(PATH_PAPERS, 'Student_results.zip'), 'w') as zipf:
+            for root, dirs, files in os.walk(PATH_PAPERS):
+                for file in files:
+                    if file.endswith(".pdf"):
+                        zipf.write(os.path.join(root, file),
+                                   os.path.basename(os.path.join(root, file)))
+
+        socketio.emit('text_response', {'data': str('false')})
+        return jsonify({'message': 'Files processed and results prepared'}), 200
 
 
 @app.route('/download')
 def download_all():
-
-    return send_file(PATH_PAPERS + '/'+'Student_results.zip',
-                     mimetype='zip',
-                     attachment_filename='Student_results.zip',
-                     as_attachment=True)
+    return send_file(os.path.join(PATH_PAPERS, 'Student_results.zip'), mimetype='zip', attachment_filename='Student_results.zip', as_attachment=True)
 
 
 if __name__ == '__main__':
