@@ -397,7 +397,7 @@ def evaluate(all_student_answers, marks, reference_answers, flag):
         start_time = time.time()
         path_to_gen_pdf = generate_pdf_reports_from_individual_feedbacks(
             PATH_PAPERS, current_paper, attempted_ques, flag)
-        highlight(lsm, ssm, nsm, path_to_gen_pdf)
+        # highlight(lsm, ssm, nsm, path_to_gen_pdf)
         print('completed generating a report, check folder')
         print('Based on our calculations, it will take the following time to generate reports for the next student:')
         print("--- %s seconds ---" % (time.time() - start_time))
@@ -999,7 +999,7 @@ def highlight(lsm, ssm, nsm, path_to_gen_pdf):
 
                     for page in doc:
                         pages.append(page)
-                        text_instances = page.searchFor(text)
+                        text_instances = page.getText(text)
                         text_instances_per_page.append(text_instances)
 
                     for idx, ele in enumerate(text_instances_per_page):

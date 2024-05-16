@@ -30,7 +30,7 @@
       <div class="footer-container" style="margin-top: 10px;">
         <div class="custom-footer-bg">
           <div class="footer">
-            <p>@Copyright Parth Chudasama</p>
+            <p>@Roshni Magar</p>
           </div>
         </div>
       </div>

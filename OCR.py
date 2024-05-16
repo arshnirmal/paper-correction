@@ -45,7 +45,7 @@ class VisionOCR:
             content = imagefile.read()
 
         image = vision.Image(content=content)
-        response = client.document_text_detection(image=image)
+        response = client.document_text_detection(image)
 
         # request = {
         #     "image": {
@@ -61,9 +61,7 @@ class VisionOCR:
         #     }
         # }
 
-        # response = client.document_text_detection(
-        #     image, max_results=None, retry=None, timeout=None
-        # )
+        # response = client.annotate_image(request)
 
         return response
 
