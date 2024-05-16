@@ -582,7 +582,7 @@ def interpret_sim_mat_and_generate_report(sim_mat, sim_mat_trans, ans_key_sent, 
         os.chdir(os.path.join(PATH_PAPERS, 'S'+str(current_paper)))
 
     # Open a file for dumping text
-    f = open(str(current_q_number)+'.txt', "a", encoding='latin-1')
+    f = open(str(current_q_number)+'.txt', "a", encoding='utf-8')
 
     print('The student has written the following answer for this question: \n', file=f)
     print(' '.join(ans_stu_sent)+'\n', file=f)

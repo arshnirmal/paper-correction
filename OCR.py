@@ -25,7 +25,8 @@ def spell_correction(text):
     word_list = text.split(" ")
     for word in word_list:
         corrected_word = spell.correction(word)
-        correction.append(corrected_word if corrected_word is not None else word)
+        correction.append(
+            corrected_word if corrected_word is not None else word)
     corr_text = ' '.join(correction)
     return corr_text
 
@@ -35,11 +36,35 @@ class VisionOCR:
         self.img = str(img_file)
 
     def ocr(self):
+        # credentials = service_account.Credentials.from_service_account_file(
+        #     filename=credential_path
+        # )
         client = vision.ImageAnnotatorClient()
+
         with io.open(self.img, 'rb') as imagefile:
             content = imagefile.read()
-        image = types.Image(content=content)
+
+        image = vision.Image(content=content)
         response = client.document_text_detection(image=image)
+
+        # request = {
+        #     "image": {
+        #         "image": content
+        #     },
+        #     "features": [
+        #         {
+        #             "type": "DOCUMENT_TEXT_DETECTION"
+        #         }
+        #     ],
+        #     "imageContext": {
+        #         "languageHints": ["en-t-i0-handwrit"]
+        #     }
+        # }
+
+        # response = client.document_text_detection(
+        #     image, max_results=None, retry=None, timeout=None
+        # )
+
         return response
 
     def parse_text(self, response):
@@ -173,12 +198,14 @@ class ImagePreprocessing:
             print('Found the following files with unrecognized extensions:')
             for file in other_files:
                 print(file)
-            print('These files will not be evaluated. Please use images or PDF documents.')
+            print(
+                'These files will not be evaluated. Please use images or PDF documents.')
 
     def _process_image_file(self, file_path, images_count):
         try:
             self.preprocess(file_path, images_count)
-            print('An image was found, processing and moving it to the "PHOTOS" directory in the output path.')
+            print(
+                'An image was found, processing and moving it to the "PHOTOS" directory in the output path.')
         except Exception as e:
             print(f"Error processing image file {file_path}: {e}")
 
