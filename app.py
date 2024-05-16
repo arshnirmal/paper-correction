@@ -69,7 +69,8 @@ log1 = logging.getLogger('engineio')
 log1.disabled = True
 
 # setting GCP creds
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "secret_key.json"
+credential_path = "/mnt/data/Arsh/Computer Science/Python/paper-correction/secret_key.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = credential_path
 
 # Check and create required folders
 student_upload = os.getcwd() + '/student_files'

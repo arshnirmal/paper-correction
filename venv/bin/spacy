@@ -1,0 +1,11 @@
+python -m spacy download en_core_web_sm
+#!/bin/sh
+'''exec' "/mnt/data/Arsh/Computer Science/Python/paper-correction/venv/bin/python3.9" "$0" "$@"
+' '''
+# -*- coding: utf-8 -*-
+import re
+import sys
+from spacy.cli import setup_cli
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
+    sys.exit(setup_cli())

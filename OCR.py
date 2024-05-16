@@ -11,7 +11,8 @@ from google.cloud.vision_v1 import types
 from spellchecker import SpellChecker
 
 # setting GCP creds
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "Paper Correction-59f4c4bd6353.json"
+credential_path = "/mnt/data/Arsh/Computer Science/Python/paper-correction/secret_key.json"
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credential_path
 misc_files = os.getcwd() + '/misc_files'
 
 
